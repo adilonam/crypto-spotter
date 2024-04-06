@@ -20,7 +20,7 @@ interface PasswordManager extends DefaultPasswordManager {
   passPhrase: string
 }
 
-export default function Password() {
+export default function Page() {
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<PasswordManager[]>>(null)
 

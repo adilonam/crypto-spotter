@@ -16,7 +16,7 @@ interface FormDataType {
   email: string
 }
 
-export default function ForgotPassword() {
+export default function Page() {
   const session = useSession()
   const apiUrl = "/api/send-reset-password-email"
   const router = useRouter()

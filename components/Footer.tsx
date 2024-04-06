@@ -7,7 +7,7 @@ const Footer = () => {
         <span className='text-sm text-gray-500 sm:text-center dark:text-gray-400'>
           © 2024{' '}
           <a href='/' className='hover:underline'>
-            FortiVault
+            Crypto Spotter
           </a>
           . All Rights Reserved.
         </span>
