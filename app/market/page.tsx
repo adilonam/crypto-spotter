@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import {version, binance, Ticker, Tickers} from 'ccxt';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -36,47 +37,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@hotmail.com",
-  },
-]
 
- type Payment = {
-  id: string
-  amount: number
-  status: "pending" | "processing" | "success" | "failed"
-  email: string
-}
 
- const columns: ColumnDef<Payment>[] = [
+
+
+
+
+ const columns: ColumnDef<Ticker>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -100,74 +67,50 @@ const data: Payment[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
+    accessorKey: "symbol",
+    header: "Symbol",
+    cell: ({ row }) => {
+      return(<div className="capitalize">{row.getValue("symbol")}</div>)
+    },
   },
   {
-    accessorKey: "email",
+    accessorKey: "bid",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          Bid
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => <div className="lowercase">{row.getValue("bid")}</div>,
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount)
-
-      return <div className="text-right font-medium">{formatted}</div>
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original
-
+    accessorKey: "ask",
+    header: ({ column }) => {
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ask
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
       )
     },
+    cell: ({ row }) => <div className="lowercase">{row.getValue("ask")}</div>,
   },
+
+
 ]
 
 export default function DataTableDemo() {
+
+  const [data, setData] = React.useState<Ticker[]>([])
+
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -195,14 +138,59 @@ export default function DataTableDemo() {
     },
   })
 
+
+ 
+  const cryptoPairs = [
+    'BTC/USDT',
+    'ETH/USDT',
+    'XRP/USDT',
+    'BCH/USDT',
+    'LTC/USDT',
+    'EOS/USDT',
+    'XTZ/USDT',
+    'LINK/USDT',
+    'SOL/USDT',
+    'ADA/USDT'
+  ];
+
+    React.useEffect(() => {
+      // Use CCXT to fetch data for 10 cryptocurrencies
+      const fetchCryptoData = async () => {
+        
+        const exchangeInstance = new binance();
+  
+        // Define an array of cryptocurrency pairs to fetch
+     
+  
+        // Loop over the cryptocurrency pairs and fetch the tickers
+        try {
+          let _data  = []
+
+          for (const pair of cryptoPairs) {
+            const ticker: Ticker = await exchangeInstance.fetchTicker(pair);
+            _data.push(ticker)
+           
+          }
+          setData(_data)
+          
+        } catch (error) {
+          console.error('Error fetching tickers:', error);
+        }
+      };
+  
+      // Call the async function to fetch the data
+      fetchCryptoData();
+    }, []);
+  
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter symbol..."
+          value={(table.getColumn("symbol")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("symbol")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
