@@ -30,6 +30,6 @@
     ".next/types/**/*.ts",
     "pages/api/auth/[...nextauth].ts",
     "app/loading.tsx"
-  ],
+, "tailwind.config.ts"  ],
   "exclude": ["node_modules"]
 }

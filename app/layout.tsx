@@ -1,11 +1,19 @@
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { getServerSession } from 'next-auth'
-import './globals.scss'
+import './globals.css'
 import SessionProvider from './SessionProvider'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import EmailVerificationAlert from '@/components/EmailVerificationAlert'
 import { PrismaClient } from '@prisma/client'
+import { Inter as FontSans } from "next/font/google"
+import { cn } from "@/lib/utils"
+
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
 
 export default async function RootLayout({
   children,
@@ -26,12 +34,12 @@ export default async function RootLayout({
 
   return (
     <html lang='en'>
-      <body>
+      <body     className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          fontSans.variable
+        )}>
         <SessionProvider session={session}>
           <Navbar />
-          {realUser?.emailVerified === null && (
-            <EmailVerificationAlert></EmailVerificationAlert>
-          )}
           <div className='dark:bg-gray-800 min-h-screen'>{children}</div>
           <Footer />
         </SessionProvider>

@@ -182,33 +182,11 @@ export default function SignIn() {
               </div>
             </button>
           </form>
-          <div className='mt-5 flex items-center justify-center'>
-            <button
-              className='px-4 py-2 justify-center w-full border flex gap-2 border-slate-200 rounded-lg text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:shadow transition duration-150 dark:border-white dark:text-white dark:hover:text-gray-900 dark:hover:border-gray-400 dark:hover:shadow-lg'
-              onClick={(e) => signIn('google')}
-            >
-              <Image
-                width={60}
-                height={60}
-                className='w-6 h-6'
-                src={googleLogo}
-                loading='lazy'
-                alt='google logo'
-              />
-              <span className='text-black dark:text-white'>
-                Login with Google
-              </span>
-            </button>
-          </div>
+      
 
           <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-400'>
-            Not a member?{' '}
-            <button
-              onClick={() => router.push('signup')}
-              className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-200'
-            >
-              Sign Up
-            </button>
+            Not a member?{' '} contact the admin
+         
           </p>
         </div>
       </div>

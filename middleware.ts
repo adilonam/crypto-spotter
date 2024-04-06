@@ -9,7 +9,7 @@ export default withAuth(
 
 
     const protectedAuth = ['/signin', '/signup', '/forgot-password' , '/reset-password'];
-    const protectedAnonymos = ['/password', '/verify-email'];
+    const protectedAnonymos = ['/market', '/verify-email'];
 const pathname = req.nextUrl.pathname;
 
 
