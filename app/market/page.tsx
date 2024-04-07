@@ -187,13 +187,12 @@ export default function Page() {
 
   const fetchData = async () => {
       try {
-          const response = await axios.get('http://localhost:3000/api/v1/crypto-data', {
+          const response = await axios.get('/api/v1/crypto-data', {
               params: {
                   pairs: cryptoPairs,
                   exchanges: exchanges
               }
           });
-         console.log(response);
          setData(response.data)
       } catch (error) {
           console.error("Error fetching data: ", error);
