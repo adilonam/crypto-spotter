@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import {version, binance, Ticker, Tickers} from 'ccxt';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -22,9 +21,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -37,13 +33,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import { Loader2 } from "lucide-react"
+
+import axios from 'axios';
+import { CryptoDataClient } from "@/utils/utilsClient"
 
 
 
 
-
-
- const columns: ColumnDef<Ticker>[] = [
+ const columns: ColumnDef<CryptoDataClient>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -72,6 +70,21 @@ import {
     cell: ({ row }) => {
       return(<div className="capitalize">{row.getValue("symbol")}</div>)
     },
+  },
+  {
+    accessorKey: "exchangeId",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Exchange
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => <div className="lowercase">{row.getValue("exchangeId")}</div>,
   },
   {
     accessorKey: "bid",
@@ -103,13 +116,27 @@ import {
     },
     cell: ({ row }) => <div className="lowercase">{row.getValue("ask")}</div>,
   },
-
+  {
+    accessorKey: "quoteVolume",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Volume
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => <div className="lowercase">{Math.round((row.getValue("quoteVolume") + Number.EPSILON) * 100) / 100}</div>,
+  },
 
 ]
 
-export default function DataTableDemo() {
+export default function Page() {
 
-  const [data, setData] = React.useState<Ticker[]>([])
+  const [data, setData] = React.useState<CryptoDataClient[]>([])
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -140,48 +167,44 @@ export default function DataTableDemo() {
 
 
  
-  const cryptoPairs = [
-    'BTC/USDT',
-    'ETH/USDT',
-    'XRP/USDT',
-    'BCH/USDT',
-    'LTC/USDT',
-    'EOS/USDT',
-    'XTZ/USDT',
-    'LINK/USDT',
-    'SOL/USDT',
-    'ADA/USDT'
+ 
+
+
+   React.useEffect(()=>{
+    const cryptoPairs = [
+      'BTC/USDT',
+      'ETH/USDT',
+      'XRP/USDT',
+      'BCH/USDT',
+      'LTC/USDT',
+      'EOS/USDT',
+      'XTZ/USDT',
+      'LINK/USDT',
+      'SOL/USDT',
+      'ADA/USDT'
   ];
+  const exchanges = ['kraken', 'coinbase', 'binance'];
 
-    React.useEffect(() => {
-      // Use CCXT to fetch data for 10 cryptocurrencies
-      const fetchCryptoData = async () => {
-        
-        const exchangeInstance = new binance();
-  
-        // Define an array of cryptocurrency pairs to fetch
-     
-  
-        // Loop over the cryptocurrency pairs and fetch the tickers
-        try {
-          let _data  = []
+  const fetchData = async () => {
+      try {
+          const response = await axios.get('http://localhost:3000/api/v1/crypto-data', {
+              params: {
+                  pairs: cryptoPairs,
+                  exchanges: exchanges
+              }
+          });
+         console.log(response);
+         setData(response.data)
+      } catch (error) {
+          console.error("Error fetching data: ", error);
+          // Handle error appropriately in your actual application
+      }
+  };
 
-          for (const pair of cryptoPairs) {
-            const ticker: Ticker = await exchangeInstance.fetchTicker(pair);
-            _data.push(ticker)
-           
-          }
-          setData(_data)
-          
-        } catch (error) {
-          console.error('Error fetching tickers:', error);
-        }
-      };
-  
-      // Call the async function to fetch the data
-      fetchCryptoData();
-    }, []);
-  
+  fetchData();
+
+
+   }, [])
 
   return (
     <div className="w-full">
@@ -264,7 +287,14 @@ export default function DataTableDemo() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                <div className="flex ">
+                  <div className="mx-auto flex flex-nowrap">
+                  <Loader2 className="h-4 w-4 m-1 animate-spin" > </Loader2>
+                  Please wait ...
+                  </div>
+     
+      
+      </div>
                 </TableCell>
               </TableRow>
             )}

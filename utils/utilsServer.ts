@@ -5,6 +5,9 @@ import nodemailer from 'nodemailer'
 import { randomUUID } from 'crypto'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import ccxt, { Exchange, Ticker } from 'ccxt'
+
+
 
 export async function getById(
   objId: string,
@@ -238,3 +241,76 @@ export async function checkToken(
     return false
   }
 }
+
+
+
+
+
+
+
+export interface CryptoDataServer extends Ticker {
+  exchangeId: string;
+}
+
+// Type for the function to fetch data from exchanges
+
+
+// Hook to fetch the crypto data
+export const getCryptoData = async (exchanges : string[] , cryptoPairs: string[] ):Promise<CryptoDataServer[]>=> {
+ 
+
+
+    const fetchExchangeData: (exchangeId: string, pairs: string[]) => Promise<CryptoDataServer[]> = async (exchangeId, pairs) => {
+      try {
+        const exchangeClass:  any = ccxt[exchangeId as keyof typeof ccxt];
+
+        if (exchangeClass) {
+
+          let exchangeInstance: Exchange = new exchangeClass();
+          switch (exchangeId) {
+            case "binance":
+               exchangeInstance = new exchangeClass();
+              break;
+              case "kraken":
+              exchangeInstance = new exchangeClass();
+               break;
+               case "coinbase":
+               exchangeInstance = new exchangeClass();
+              break;
+            default:
+               exchangeInstance = new exchangeClass();
+              break;
+          }
+       
+       
+          const tickers: { [symbol: string]: Ticker } = await exchangeInstance.fetchTickers(pairs);
+          
+          return Object.values(tickers).map((ticker: Ticker) => ({
+           ...ticker , 
+            exchangeId: exchangeId,
+          }));
+        }
+        return [];
+      } catch (error) {
+        console.error(`Error fetching tickers from ${exchangeId}:`, error);
+        return [];
+      }
+    };
+
+    const fetchCryptoData = async () => {
+      let _data: CryptoDataServer[] = [];
+
+      for (let i = 0; i < exchanges.length; i++) {
+        const exchangeData: CryptoDataServer[] = await fetchExchangeData(exchanges[i], cryptoPairs);
+        _data = [..._data, ...exchangeData];
+      }
+
+      return _data
+    };
+
+    // Call the async function to fetch the data
+   const cryptoData: CryptoDataServer[] = await fetchCryptoData();
+
+  return cryptoData;
+};
+

@@ -6,10 +6,9 @@ import Logo from '/assets/logo.png'
 import Image from 'next/image'
 import { signIn, useSession } from 'next-auth/react'
 import { useFormik } from 'formik'
-import { Toast } from 'primereact/toast'
-import { PrimeReactProvider } from 'primereact/api'
-import Tailwind from 'primereact/passthrough/tailwind'
-import googleLogo from '@/public/google.svg'
+import { Button } from "@/components/ui/button"
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/components/ui/use-toast"
 
 interface FormDataType {
   email: string
@@ -19,8 +18,9 @@ interface FormDataType {
 export default function SignIn() {
   const session = useSession()
   const router = useRouter()
-  const toast = useRef<Toast>(null)
 
+
+  const { toast } = useToast()
   const initialValues: FormDataType = {
     email: '',
     password: '',
@@ -31,11 +31,11 @@ export default function SignIn() {
     validate: (data: FormDataType) => {
       let errors: { [key: string]: string } = {}
 
-      ;['email', 'password'].forEach((element: string) => {
-        if (data[element as keyof FormDataType] === '') {
-          errors[element as keyof FormDataType] = 'This field is required !'
-        }
-      })
+        ;['email', 'password'].forEach((element: string) => {
+          if (data[element as keyof FormDataType] === '') {
+            errors[element as keyof FormDataType] = 'This field is required !'
+          }
+        })
       return errors
     },
     onSubmit: async (data: FormDataType) => {
@@ -49,10 +49,10 @@ export default function SignIn() {
         if (resp?.ok) {
           window.location.href = '/'
         } else {
-          toast.current?.show({
-            severity: 'error',
-            summary: 'Error',
-            detail: resp?.error,
+          toast({
+            variant: "destructive",
+            title: "Bad credential",
+          
           })
         }
       }
@@ -72,10 +72,9 @@ export default function SignIn() {
 
   return (
     <>
+
       <div className='flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8 '>
-        <PrimeReactProvider value={{ unstyled: true, pt: Tailwind }}>
-          <Toast ref={toast} />
-        </PrimeReactProvider>
+
         <div className='sm:mx-auto sm:w-full sm:max-w-sm'>
           <Image
             className='mx-auto w-auto h-auto'
@@ -126,15 +125,7 @@ export default function SignIn() {
                 >
                   Password
                 </label>
-                <div className='text-sm'>
-                  <button
-                   onClick={()=>router.push('/forgot-password')}
-                   type='button'
-                    className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-200'
-                  >
-                    Forgot password?
-                  </button>
-                </div>
+
               </div>
               <div className='mt-2'>
                 <input
@@ -182,11 +173,11 @@ export default function SignIn() {
               </div>
             </button>
           </form>
-      
+
 
           <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-400'>
             Not a member?{' '} contact the admin
-         
+
           </p>
         </div>
       </div>
