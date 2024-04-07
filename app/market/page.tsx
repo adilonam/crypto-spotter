@@ -129,7 +129,7 @@ import { CryptoDataClient } from "@/utils/utilsClient"
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{Math.round((row.getValue("quoteVolume") + Number.EPSILON) * 100) / 100}</div>,
+    cell: ({ row }) => <div className="lowercase">{Math.round((row.getValue("quoteVolume") as number + Number.EPSILON) * 100) / 100}</div>,
   },
 
 ]
