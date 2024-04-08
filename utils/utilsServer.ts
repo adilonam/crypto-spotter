@@ -267,6 +267,10 @@ export const getCryptoData = async (exchanges : string[] , cryptoPairs: string[]
         if (exchangeClass) {
 
           let exchangeInstance: Exchange = new exchangeClass();
+
+
+
+    
           switch (exchangeId) {
             case "binance":
                exchangeInstance = new exchangeClass();
@@ -280,7 +284,10 @@ export const getCryptoData = async (exchanges : string[] , cryptoPairs: string[]
             default:
                exchangeInstance = new exchangeClass();
               break;
-          }
+          } 
+
+        
+          exchangeInstance.httpProxy = process.env.PROXY_URL as string
        
        
           const tickers: { [symbol: string]: Ticker } = await exchangeInstance.fetchTickers(pairs);
