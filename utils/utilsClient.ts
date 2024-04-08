@@ -29,63 +29,9 @@ export enum DialogStatus {
 }
 
 export interface CryptoDataClient extends Ticker {
-  exchangeId: string
-}
-
-// Type for the function to fetch data from exchanges
-type FetchExchangeData = (
   exchangeId: string,
-  pairs: string[]
-) => Promise<CryptoDataClient[]>
-
-// Hook to fetch the crypto data
-export const useCryptoData = (
-  cryptoPairs: string[],
-  exchanges: string[]
-): CryptoDataClient[] => {
-  const [cryptoData, setCryptoData] = useState<CryptoDataClient[]>([])
-
-  useEffect(() => {
-    const fetchExchangeData: FetchExchangeData = async (exchangeId, pairs) => {
-      try {
-        const exchangeClass: any = ccxt[exchangeId as keyof typeof ccxt]
-
-        if (exchangeClass) {
-          const exchangeInstance: Exchange = new exchangeClass()
-          console.log(exchangeInstance.has)
-
-          const tickers: { [symbol: string]: Ticker } =
-            await exchangeInstance.fetchTickers(pairs)
-
-          return Object.values(tickers).map((ticker: Ticker) => ({
-            ...ticker,
-            exchangeId: exchangeId,
-          }))
-        }
-        return []
-      } catch (error) {
-        console.error(`Error fetching tickers from ${exchangeId}:`, error)
-        return []
-      }
-    }
-
-    const fetchCryptoData = async () => {
-      let _data: CryptoDataClient[] = []
-
-      for (let i = 0; i < exchanges.length; i++) {
-        const exchangeData: CryptoDataClient[] = await fetchExchangeData(
-          exchanges[i],
-          cryptoPairs
-        )
-        _data = [..._data, ...exchangeData]
-      }
-
-      setCryptoData(_data)
-    }
-
-    // Call the async function to fetch the data
-    fetchCryptoData()
-  }, [])
-
-  return cryptoData
+  price: number ,
+  priceChange : number
 }
+
+

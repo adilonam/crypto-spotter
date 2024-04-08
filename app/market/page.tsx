@@ -85,35 +85,23 @@ const columns: ColumnDef<CryptoDataClient>[] = [
       <div className='lowercase'>{row.getValue('exchangeId')}</div>
     ),
   },
+ 
   {
-    accessorKey: 'bid',
+    accessorKey: 'price',
     header: ({ column }) => {
       return (
         <Button
           variant='ghost'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Bid
+          Price
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div className='lowercase'>{row.getValue('bid')}</div>,
-  },
-  {
-    accessorKey: 'ask',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Ask
-          <ArrowUpDown className='ml-2 h-4 w-4' />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className='lowercase'>{row.getValue('ask')}</div>,
+    cell: ({ row }) => <div className='lowercase'> {Math.round(
+      ((row.getValue('price') as number) + Number.EPSILON) * 100
+    ) / 100}</div>,
   },
   {
     accessorKey: 'quoteVolume',
@@ -132,6 +120,27 @@ const columns: ColumnDef<CryptoDataClient>[] = [
       <div className='lowercase'>
         {Math.round(
           ((row.getValue('quoteVolume') as number) + Number.EPSILON) * 100
+        ) / 100}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'priceChange',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Change
+          <ArrowUpDown className='ml-2 h-4 w-4' />
+        </Button>
+      )
+    },
+    cell: ({ row }) => (
+      <div className={`lowercase text-xl ${(row.getValue('priceChange') as number) > 0 ? "text-red-500" : "text-green-500"}`}>
+        {Math.round(
+          ((row.getValue('priceChange') as number) + Number.EPSILON) * 100
         ) / 100}
       </div>
     ),
@@ -168,6 +177,19 @@ export default function Page() {
     },
   })
 
+
+//get lowest prices
+const getLowestPrices = (data: CryptoDataClient[]): Record<string, number> => {
+  return data.reduce((acc: Record<string, number>, item: CryptoDataClient) => {
+    // If no entry for the symbol exists, or the current item's low is lower than the existing one
+    if (!acc[item.symbol] || item.price < acc[item.symbol]) {
+      acc[item.symbol] = item.price; // Update the record with the new lower price
+    }
+    return acc;
+  }, {});
+};
+
+
   React.useEffect(() => {
     const cryptoPairs = [
       'BTC/USDT',
@@ -181,7 +203,7 @@ export default function Page() {
       'SOL/USDT',
       'ADA/USDT',
     ]
-    const exchanges = ['kraken', 'coinbase', 'binance' , "bybit" , 'okx' ,'upbit' ]
+    const exchanges = ['kraken', 'binance' , "bybit" , 'okx' ,'upbit' ]
 
     const fetchData = async () => {
       try {
@@ -191,7 +213,36 @@ export default function Page() {
             exchanges: exchanges,
           },
         })
-        setData(response.data)
+               // calculate price
+     let _data =  response.data.map(( item : CryptoDataClient) => {
+      const price: number = (( item.ask ?? 0) + (item.bid ?? 0)) / 2;
+
+      return {
+        ...item,
+        price,
+      };
+    });
+    
+//get lowest price
+console.log(getLowestPrices(_data));
+
+let lowestPrices = getLowestPrices(_data)
+
+_data =  _data.map(( item : CryptoDataClient) => {
+  const priceChange: number =( ((item.price - lowestPrices[item.symbol])/ lowestPrices[item.symbol] * 100)  );
+
+  return {
+    ...item,
+    priceChange,
+  
+  };
+});
+
+console.log(_data);
+
+ 
+
+        setData(_data)
       } catch (error) {
         console.error('Error fetching data: ', error)
         // Handle error appropriately in your actual application
