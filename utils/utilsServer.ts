@@ -286,10 +286,6 @@ export const getCryptoData = async (exchanges : string[] , cryptoPairs: string[]
               break;
           } 
 
-        
-          // exchangeInstance.httpProxy = process.env.PROXY_URL as string
-       
-       
           const tickers: { [symbol: string]: Ticker } = await exchangeInstance.fetchTickers(pairs);
           
           return Object.values(tickers).map((ticker: Ticker) => ({
