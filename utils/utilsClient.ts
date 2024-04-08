@@ -29,9 +29,7 @@ export enum DialogStatus {
 }
 
 export interface CryptoDataClient extends Ticker {
-  exchangeId: string,
-  price: number ,
-  priceChange : number
+  exchangeId: string
+  price: number
+  priceChange: number
 }
-
-

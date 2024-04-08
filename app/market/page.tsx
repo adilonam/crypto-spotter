@@ -85,7 +85,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
       <div className='lowercase'>{row.getValue('exchangeId')}</div>
     ),
   },
- 
+
   {
     accessorKey: 'price',
     header: ({ column }) => {
@@ -99,9 +99,14 @@ const columns: ColumnDef<CryptoDataClient>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className='lowercase'> {Math.round(
-      ((row.getValue('price') as number) + Number.EPSILON) * 100
-    ) / 100}</div>,
+    cell: ({ row }) => (
+      <div className='lowercase'>
+        {' '}
+        {Math.round(
+          ((row.getValue('price') as number) + Number.EPSILON) * 100
+        ) / 100}
+      </div>
+    ),
   },
   {
     accessorKey: 'quoteVolume',
@@ -138,7 +143,9 @@ const columns: ColumnDef<CryptoDataClient>[] = [
       )
     },
     cell: ({ row }) => (
-      <div className={`lowercase text-xl ${(row.getValue('priceChange') as number) > 0 ? "text-red-500" : "text-green-500"}`}>
+      <div
+        className={`lowercase text-xl ${(row.getValue('priceChange') as number) > 0 ? 'text-red-500' : 'text-green-500'}`}
+      >
         {Math.round(
           ((row.getValue('priceChange') as number) + Number.EPSILON) * 100
         ) / 100}
@@ -177,18 +184,21 @@ export default function Page() {
     },
   })
 
-
-//get lowest prices
-const getLowestPrices = (data: CryptoDataClient[]): Record<string, number> => {
-  return data.reduce((acc: Record<string, number>, item: CryptoDataClient) => {
-    // If no entry for the symbol exists, or the current item's low is lower than the existing one
-    if (!acc[item.symbol] || item.price < acc[item.symbol]) {
-      acc[item.symbol] = item.price; // Update the record with the new lower price
-    }
-    return acc;
-  }, {});
-};
-
+  //get lowest prices
+  const getLowestPrices = (
+    data: CryptoDataClient[]
+  ): Record<string, number> => {
+    return data.reduce(
+      (acc: Record<string, number>, item: CryptoDataClient) => {
+        // If no entry for the symbol exists, or the current item's low is lower than the existing one
+        if (!acc[item.symbol] || item.price < acc[item.symbol]) {
+          acc[item.symbol] = item.price // Update the record with the new lower price
+        }
+        return acc
+      },
+      {}
+    )
+  }
 
   React.useEffect(() => {
     const cryptoPairs = [
@@ -203,7 +213,7 @@ const getLowestPrices = (data: CryptoDataClient[]): Record<string, number> => {
       'SOL/USDT',
       'ADA/USDT',
     ]
-    const exchanges = ['kraken', 'binance' , "bybit" , 'okx' ,'upbit' ]
+    const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'upbit']
 
     const fetchData = async () => {
       try {
@@ -213,34 +223,32 @@ const getLowestPrices = (data: CryptoDataClient[]): Record<string, number> => {
             exchanges: exchanges,
           },
         })
-               // calculate price
-     let _data =  response.data.map(( item : CryptoDataClient) => {
-      const price: number = (( item.ask ?? 0) + (item.bid ?? 0)) / 2;
+        // calculate price
+        let _data = response.data.map((item: CryptoDataClient) => {
+          const price: number = ((item.ask ?? 0) + (item.bid ?? 0)) / 2
 
-      return {
-        ...item,
-        price,
-      };
-    });
-    
-//get lowest price
-console.log(getLowestPrices(_data));
+          return {
+            ...item,
+            price,
+          }
+        })
 
-let lowestPrices = getLowestPrices(_data)
+        //get lowest price
 
-_data =  _data.map(( item : CryptoDataClient) => {
-  const priceChange: number =( ((item.price - lowestPrices[item.symbol])/ lowestPrices[item.symbol] * 100)  );
+        let lowestPrices = getLowestPrices(_data)
 
-  return {
-    ...item,
-    priceChange,
-  
-  };
-});
+        // insert price changes
+        _data = _data.map((item: CryptoDataClient) => {
+          const priceChange: number =
+            ((item.price - lowestPrices[item.symbol]) /
+              lowestPrices[item.symbol]) *
+            100
 
-console.log(_data);
-
- 
+          return {
+            ...item,
+            priceChange,
+          }
+        })
 
         setData(_data)
       } catch (error) {
