@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import * as React from "react"
+import * as React from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,18 +12,18 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+} from '@tanstack/react-table'
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -31,111 +31,114 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table'
 
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react'
 
-import axios from 'axios';
-import { CryptoDataClient } from "@/utils/utilsClient"
+import axios from 'axios'
+import { CryptoDataClient } from '@/utils/utilsClient'
 
-
-
-
- const columns: ColumnDef<CryptoDataClient>[] = [
+const columns: ColumnDef<CryptoDataClient>[] = [
   {
-    id: "select",
+    id: 'select',
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
+        aria-label='Select all'
       />
     ),
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
+        aria-label='Select row'
       />
     ),
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "symbol",
-    header: "Symbol",
+    accessorKey: 'symbol',
+    header: 'Symbol',
     cell: ({ row }) => {
-      return(<div className="capitalize">{row.getValue("symbol")}</div>)
+      return <div className='capitalize'>{row.getValue('symbol')}</div>
     },
   },
   {
-    accessorKey: "exchangeId",
+    accessorKey: 'exchangeId',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Exchange
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("exchangeId")}</div>,
+    cell: ({ row }) => (
+      <div className='lowercase'>{row.getValue('exchangeId')}</div>
+    ),
   },
   {
-    accessorKey: "bid",
+    accessorKey: 'bid',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Bid
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("bid")}</div>,
+    cell: ({ row }) => <div className='lowercase'>{row.getValue('bid')}</div>,
   },
   {
-    accessorKey: "ask",
+    accessorKey: 'ask',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Ask
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("ask")}</div>,
+    cell: ({ row }) => <div className='lowercase'>{row.getValue('ask')}</div>,
   },
   {
-    accessorKey: "quoteVolume",
+    accessorKey: 'quoteVolume',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Volume
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
     },
-    cell: ({ row }) => <div className="lowercase">{Math.round((row.getValue("quoteVolume") as number + Number.EPSILON) * 100) / 100}</div>,
+    cell: ({ row }) => (
+      <div className='lowercase'>
+        {Math.round(
+          ((row.getValue('quoteVolume') as number) + Number.EPSILON) * 100
+        ) / 100}
+      </div>
+    ),
   },
-
 ]
 
 export default function Page() {
-
   const [data, setData] = React.useState<CryptoDataClient[]>([])
 
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -165,12 +168,7 @@ export default function Page() {
     },
   })
 
-
- 
- 
-
-
-   React.useEffect(()=>{
+  React.useEffect(() => {
     const cryptoPairs = [
       'BTC/USDT',
       'ETH/USDT',
@@ -181,48 +179,46 @@ export default function Page() {
       'XTZ/USDT',
       'LINK/USDT',
       'SOL/USDT',
-      'ADA/USDT'
-  ];
-  const exchanges = ['kraken', 'coinbase', 'binance'];
+      'ADA/USDT',
+    ]
+    const exchanges = ['kraken', 'coinbase', 'binance' , "bybit" , 'okx' ,'upbit' ]
 
-  const fetchData = async () => {
+    const fetchData = async () => {
       try {
-          const response = await axios.get('/api/v1/crypto-data', {
-              params: {
-                  pairs: cryptoPairs,
-                  exchanges: exchanges
-              }
-          });
-         setData(response.data)
+        const response = await axios.get('/api/v1/crypto-data', {
+          params: {
+            pairs: cryptoPairs,
+            exchanges: exchanges,
+          },
+        })
+        setData(response.data)
       } catch (error) {
-          console.error("Error fetching data: ", error);
-          // Handle error appropriately in your actual application
+        console.error('Error fetching data: ', error)
+        // Handle error appropriately in your actual application
       }
-  };
+    }
 
-  fetchData();
-
-
-   }, [])
+    fetchData()
+  }, [])
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
+    <div className='w-full'>
+      <div className='flex items-center py-4'>
         <Input
-          placeholder="Filter symbol..."
-          value={(table.getColumn("symbol")?.getFilterValue() as string) ?? ""}
+          placeholder='Filter symbol...'
+          value={(table.getColumn('symbol')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn("symbol")?.setFilterValue(event.target.value)
+            table.getColumn('symbol')?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className='max-w-sm'
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+            <Button variant='outline' className='ml-auto'>
+              Columns <ChevronDown className='ml-2 h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align='end'>
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -230,7 +226,7 @@ export default function Page() {
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className="capitalize"
+                    className='capitalize'
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) =>
                       column.toggleVisibility(!!value)
@@ -243,7 +239,7 @@ export default function Page() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-md border">
+      <div className='rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -268,7 +264,7 @@ export default function Page() {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -284,39 +280,37 @@ export default function Page() {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className='h-24 text-center'
                 >
-                <div className="flex ">
-                  <div className="mx-auto flex flex-nowrap">
-                  <Loader2 className="h-4 w-4 m-1 animate-spin" > </Loader2>
-                  Please wait ...
+                  <div className='flex '>
+                    <div className='mx-auto flex flex-nowrap'>
+                      <Loader2 className='h-4 w-4 m-1 animate-spin'> </Loader2>
+                      Please wait ...
+                    </div>
                   </div>
-     
-      
-      </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+      <div className='flex items-center justify-end space-x-2 py-4'>
+        <div className='flex-1 text-sm text-muted-foreground'>
+          {table.getFilteredSelectedRowModel().rows.length} of{' '}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="space-x-2">
+        <div className='space-x-2'>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             Previous
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

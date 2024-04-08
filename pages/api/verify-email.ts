@@ -9,10 +9,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const session = await getServerSession(req, res, authOptions)
-  
+
   if (req.method === 'GET' && session?.user) {
-    if (session.user.emailVerified){
-   return   res.status(200).json({ verified: true})
+    if (session.user.emailVerified) {
+      return res.status(200).json({ verified: true })
     }
     const check = await checkToken(
       session.user as User,
@@ -27,9 +27,9 @@ export default async function handler(
         data: { emailVerified: new Date() },
       })
       prisma.$disconnect()
-     return res.status(200).json({ verified: true})
+      return res.status(200).json({ verified: true })
     } else {
-   return   res.status(200).json({ verified: false })
+      return res.status(200).json({ verified: false })
     }
   } else {
     res.setHeader('Allow', ['GET'])

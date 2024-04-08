@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'  
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const { data: session } = useSession()
@@ -16,7 +16,7 @@ export default function Home() {
             Welcome to Crypto Spotter
           </h1>
           <p className='mt-6 text-lg leading-8 text-black dark:text-white'>
-            Track the latest prices and trends in the crypto market with ease. 
+            Track the latest prices and trends in the crypto market with ease.
             <span
               hidden={!session?.user?.email}
               className='ml-2 bg-green-100 text-green-800 font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300'

@@ -18,7 +18,7 @@ interface FormDataType {
 
 export default function Page() {
   const session = useSession()
-  const apiUrl = "/api/send-reset-password-email"
+  const apiUrl = '/api/send-reset-password-email'
   const router = useRouter()
   const toast = useRef<Toast>(null)
 
@@ -41,25 +41,24 @@ export default function Page() {
     onSubmit: async (data: FormDataType) => {
       if (data) {
         try {
-            const response = await axios.get(apiUrl,{params:{...data}})
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Success',
-            })
+          const response = await axios.get(apiUrl, { params: { ...data } })
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Success',
+          })
         } catch (error) {
-            const errorMessage =
-                typeof error === 'string'
-                    ? error
-                    : error instanceof Error
-                        ? error.message
-                        : 'An unknown error occurred'
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: errorMessage,
-            })
+          const errorMessage =
+            typeof error === 'string'
+              ? error
+              : error instanceof Error
+                ? error.message
+                : 'An unknown error occurred'
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Error',
+            detail: errorMessage,
+          })
         }
-     
       }
     },
   })
@@ -123,8 +122,6 @@ export default function Page() {
               </div>
             </div>
 
-         
-
             <button
               type='submit'
               disabled={formik.isSubmitting}
@@ -155,9 +152,6 @@ export default function Page() {
               </div>
             </button>
           </form>
-       
-
-         
         </div>
       </div>
     </>

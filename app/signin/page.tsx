@@ -6,9 +6,9 @@ import Logo from '/assets/logo.png'
 import Image from 'next/image'
 import { signIn, useSession } from 'next-auth/react'
 import { useFormik } from 'formik'
-import { Button } from "@/components/ui/button"
-import { ToastAction } from "@/components/ui/toast"
-import { useToast } from "@/components/ui/use-toast"
+import { Button } from '@/components/ui/button'
+import { ToastAction } from '@/components/ui/toast'
+import { useToast } from '@/components/ui/use-toast'
 
 interface FormDataType {
   email: string
@@ -18,7 +18,6 @@ interface FormDataType {
 export default function SignIn() {
   const session = useSession()
   const router = useRouter()
-
 
   const { toast } = useToast()
   const initialValues: FormDataType = {
@@ -31,11 +30,11 @@ export default function SignIn() {
     validate: (data: FormDataType) => {
       let errors: { [key: string]: string } = {}
 
-        ;['email', 'password'].forEach((element: string) => {
-          if (data[element as keyof FormDataType] === '') {
-            errors[element as keyof FormDataType] = 'This field is required !'
-          }
-        })
+      ;['email', 'password'].forEach((element: string) => {
+        if (data[element as keyof FormDataType] === '') {
+          errors[element as keyof FormDataType] = 'This field is required !'
+        }
+      })
       return errors
     },
     onSubmit: async (data: FormDataType) => {
@@ -50,9 +49,8 @@ export default function SignIn() {
           window.location.href = '/'
         } else {
           toast({
-            variant: "destructive",
-            title: "Bad credential",
-          
+            variant: 'destructive',
+            title: 'Bad credential',
           })
         }
       }
@@ -72,9 +70,7 @@ export default function SignIn() {
 
   return (
     <>
-
       <div className='flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8 '>
-
         <div className='sm:mx-auto sm:w-full sm:max-w-sm'>
           <Image
             className='mx-auto w-auto h-auto'
@@ -125,7 +121,6 @@ export default function SignIn() {
                 >
                   Password
                 </label>
-
               </div>
               <div className='mt-2'>
                 <input
@@ -174,10 +169,8 @@ export default function SignIn() {
             </button>
           </form>
 
-
           <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-400'>
-            Not a member?{' '} contact the admin
-
+            Not a member? contact the admin
           </p>
         </div>
       </div>

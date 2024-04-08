@@ -222,8 +222,6 @@ export default function SignUp() {
             <div className='mt-5 flex items-center justify-center'></div>
           </form>
 
-     
-
           <p className='mt-10 text-center text-sm text-gray-500'>
             Already member?{' '}
             <button

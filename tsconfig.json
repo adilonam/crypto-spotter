@@ -29,7 +29,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "pages/api/auth/[...nextauth].ts",
-    "app/loading.tsx"
-, "tailwind.config.ts.back", "tailwind.config.ts.bac"  ],
+    "app/loading.tsx",
+    "tailwind.config.ts.back",
+    "tailwind.config.ts.bac"
+  ],
   "exclude": ["node_modules"]
 }
