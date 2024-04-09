@@ -3,9 +3,8 @@ import bcrypt from 'bcrypt'
 import { PrismaClient, User } from '@prisma/client'
 import nodemailer from 'nodemailer'
 import { randomUUID } from 'crypto'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import ccxt, { Exchange, Ticker } from 'ccxt'
+import axios from 'axios';
 
 export async function getById(
   objId: string,
@@ -237,55 +236,136 @@ export async function checkToken(
 }
 
 export interface CryptoDataServer extends Ticker {
-  exchangeId: string
+  exchangeId ?: string
 }
 
+
+
+function convertValrToCctxTicker(data: any): CryptoDataServer {
+  const {
+    currencyPair,
+    askPrice,
+    bidPrice,
+    lastTradedPrice,
+    previousClosePrice,
+    baseVolume,
+    quoteVolume,
+    highPrice,
+    lowPrice,
+    created,
+    changeFromPrevious
+  } = data;
+
+  const cryptoData: CryptoDataServer = {
+    symbol: `${currencyPair.substr(0, 3)}/${currencyPair.substr(3)}`,
+    info: data,
+    timestamp: new Date(created).getTime(),
+    datetime: created,
+    high: parseFloat(highPrice),
+    low: parseFloat(lowPrice),
+    bid: parseFloat(bidPrice),
+    bidVolume: 0, // Placeholder, as we don't have actual bidVolume data
+    ask: parseFloat(askPrice),
+    askVolume: 0, // Placeholder, as we don't have actual askVolume data
+    vwap: 0,      // Placeholder, as we don't have actual vwap data
+    open: parseFloat(previousClosePrice),
+    close: parseFloat(lastTradedPrice),
+    last: parseFloat(lastTradedPrice),
+    previousClose: parseFloat(previousClosePrice),
+    change: parseFloat(lastTradedPrice) - parseFloat(previousClosePrice),
+    percentage: parseFloat(changeFromPrevious),
+    average: (parseFloat(lastTradedPrice) + parseFloat(previousClosePrice)) / 2,
+    quoteVolume: parseFloat(quoteVolume),
+    baseVolume: parseFloat(baseVolume),
+    exchangeId: "valr"
+  };
+
+  return cryptoData;
+}
 // Type for the function to fetch data from exchanges
+const ccxtCryptoData : (exchangeId: string , pairs : string[])=>Promise<CryptoDataServer[]>= async (exchangeId : string , pairs : string[])=>{
+  try {
+    const exchangeClass: any = ccxt[exchangeId as keyof typeof ccxt]
+
+    if (exchangeClass) {
+      let exchangeInstance: Exchange = new exchangeClass()
+
+
+      const tickers: { [symbol: string]: Ticker } =
+        await exchangeInstance.fetchTickers(pairs)
+
+      return Object.values(tickers).map((ticker: Ticker) => ({
+        ...ticker,
+        exchangeId: exchangeId,
+      }))
+    }
+    return []
+  } catch (error) {
+    console.error(`Error fetching tickers from ${exchangeId}:`, error)
+    return []
+  }
+
+
+}
+
+const valrCryptoData : ( pairs : string[])=>Promise<CryptoDataServer[]>= async ( pairs : string[])=>{
+
+  let cryptoDatas : CryptoDataServer[] = []
+
+  const getRequestUrl = (p : string) => `https://api.valr.com/v1/public/${p.replace('/', '')}/marketsummary`;
+  
+
+for(var pair of pairs){
+  try {
+    const response = await axios.get(getRequestUrl(pair));
+    cryptoDatas.push(convertValrToCctxTicker(response.data));
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error:', error.message);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+  }
+}
+  return cryptoDatas
+}
+
+
+
+
+
+const fetchExchangeData: (
+  exchangeId: string,
+  pairs: string[]
+) => Promise<CryptoDataServer[]> = async (exchangeId, pairs) => {
+  let cryptoDatas : CryptoDataServer[] = []
+   //switch on exchanges
+   switch (exchangeId) {
+    case 'valr':
+      cryptoDatas = await valrCryptoData(pairs);
+      break
+    default:
+      cryptoDatas = await ccxtCryptoData(exchangeId , pairs)
+      break
+  }
+
+
+  return cryptoDatas
+
+}
+
+
+
+
+
+
 
 // Hook to fetch the crypto data
 export const getCryptoData = async (
   exchanges: string[],
   cryptoPairs: string[]
 ): Promise<CryptoDataServer[]> => {
-  const fetchExchangeData: (
-    exchangeId: string,
-    pairs: string[]
-  ) => Promise<CryptoDataServer[]> = async (exchangeId, pairs) => {
-    try {
-      const exchangeClass: any = ccxt[exchangeId as keyof typeof ccxt]
-
-      if (exchangeClass) {
-        let exchangeInstance: Exchange = new exchangeClass()
-
-        switch (exchangeId) {
-          case 'binance':
-            exchangeInstance = new exchangeClass()
-            break
-          case 'kraken':
-            exchangeInstance = new exchangeClass()
-            break
-          case 'coinbase':
-            exchangeInstance = new exchangeClass()
-            break
-          default:
-            exchangeInstance = new exchangeClass()
-            break
-        }
-
-        const tickers: { [symbol: string]: Ticker } =
-          await exchangeInstance.fetchTickers(pairs)
-
-        return Object.values(tickers).map((ticker: Ticker) => ({
-          ...ticker,
-          exchangeId: exchangeId,
-        }))
-      }
-      return []
-    } catch (error) {
-      console.error(`Error fetching tickers from ${exchangeId}:`, error)
-      return []
-    }
-  }
+  
 
   const fetchCryptoData = async () => {
     let _data: CryptoDataServer[] = []

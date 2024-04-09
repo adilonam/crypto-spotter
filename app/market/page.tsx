@@ -213,7 +213,7 @@ export default function Page() {
       'SOL/USDT',
       'ADA/USDT',
     ]
-    const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'upbit']
+    const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'valr']
 
     const fetchData = async () => {
       try {
@@ -266,8 +266,10 @@ export default function Page() {
         <Input
           placeholder='Filter symbol...'
           value={(table.getColumn('symbol')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
+          onChange={(event) =>{
             table.getColumn('symbol')?.setFilterValue(event.target.value)
+          }
+        
           }
           className='max-w-sm'
         />
