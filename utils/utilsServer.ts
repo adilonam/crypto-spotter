@@ -236,7 +236,7 @@ export async function checkToken(
 }
 
 export interface CryptoDataServer extends Ticker {
-  exchangeId ?: string
+  exchangeId?: string
 }
 
 
@@ -283,21 +283,35 @@ function convertValrToCctxTicker(data: any): CryptoDataServer {
   return cryptoData;
 }
 // Type for the function to fetch data from exchanges
-const ccxtCryptoData : (exchangeId: string , pairs : string[])=>Promise<CryptoDataServer[]>= async (exchangeId : string , pairs : string[])=>{
+const ccxtCryptoData: (exchangeId: string, pairs: string[]) => Promise<CryptoDataServer[]> = async (exchangeId: string, pairs: string[]) => {
   try {
     const exchangeClass: any = ccxt[exchangeId as keyof typeof ccxt]
 
     if (exchangeClass) {
       let exchangeInstance: Exchange = new exchangeClass()
 
+      // Create an array of promises using map
+      const tickerPromises = pairs.map(pair =>
+        exchangeInstance.fetchTicker(pair).catch(error => {
+          console.error(`Error fetching ticker for pair ${pair} on ${exchangeId}:`, error);
+          return null;
+        })
+      );
 
-      const tickers: { [symbol: string]: Ticker } =
-        await exchangeInstance.fetchTickers(pairs)
+      // Await all promises
+      const tickerResults = await Promise.all(tickerPromises);
 
-      return Object.values(tickers).map((ticker: Ticker) => ({
+      // Filter out null values (errors) and map over remaining tickers to add exchangeId
+      const tickersWithExchangeId = tickerResults.filter(ticker => ticker !== null).map(ticker => ({
         ...ticker,
         exchangeId: exchangeId,
-      }))
+      }));
+
+
+      return tickersWithExchangeId as CryptoDataServer[];
+
+
+
     }
     return []
   } catch (error) {
@@ -308,26 +322,28 @@ const ccxtCryptoData : (exchangeId: string , pairs : string[])=>Promise<CryptoDa
 
 }
 
-const valrCryptoData : ( pairs : string[])=>Promise<CryptoDataServer[]>= async ( pairs : string[])=>{
+const valrCryptoData: (pairs: string[]) => Promise<CryptoDataServer[]> = async (pairs: string[]) => {
+  const getRequestUrl = (p: string) => `https://api.valr.com/v1/public/${p.replace('/', '')}/marketsummary`;
 
-  let cryptoDatas : CryptoDataServer[] = []
+  // Create an array of promises
+  const promises = pairs.map(pair => 
+    axios.get(getRequestUrl(pair)).then(response => convertValrToCctxTicker(response.data)).catch(error => {
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error:', error.message);
+      } else {
+        console.error('Unexpected error:', error);
+      }
+      return null; // Skip this pair in case of error
+    })
+  );
 
-  const getRequestUrl = (p : string) => `https://api.valr.com/v1/public/${p.replace('/', '')}/marketsummary`;
-  
+  // Wait for all the promises to settle
+  const results = await Promise.all(promises);
 
-for(var pair of pairs){
-  try {
-    const response = await axios.get(getRequestUrl(pair));
-    cryptoDatas.push(convertValrToCctxTicker(response.data));
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.message);
-    } else {
-      console.error('Unexpected error:', error);
-    }
-  }
-}
-  return cryptoDatas
+  // Filter out `null` results due to errors
+  const cryptoDatas = results.filter(result => result !== null);
+
+  return cryptoDatas as CryptoDataServer[];
 }
 
 
@@ -338,14 +354,14 @@ const fetchExchangeData: (
   exchangeId: string,
   pairs: string[]
 ) => Promise<CryptoDataServer[]> = async (exchangeId, pairs) => {
-  let cryptoDatas : CryptoDataServer[] = []
-   //switch on exchanges
-   switch (exchangeId) {
+  let cryptoDatas: CryptoDataServer[] = []
+  //switch on exchanges
+  switch (exchangeId) {
     case 'valr':
       cryptoDatas = await valrCryptoData(pairs);
       break
     default:
-      cryptoDatas = await ccxtCryptoData(exchangeId , pairs)
+      cryptoDatas = await ccxtCryptoData(exchangeId, pairs)
       break
   }
 
@@ -365,24 +381,21 @@ export const getCryptoData = async (
   exchanges: string[],
   cryptoPairs: string[]
 ): Promise<CryptoDataServer[]> => {
-  
 
-  const fetchCryptoData = async () => {
-    let _data: CryptoDataServer[] = []
+  const fetchCryptoDataPromises = exchanges.map(exchange => 
+    fetchExchangeData(exchange, cryptoPairs)
+    .catch(error => {
+      console.error(`Error fetching data for exchange ${exchange}:`, error);
+      return []; // Return an empty array if an error occurs
+    })
+  );
 
-    for (let i = 0; i < exchanges.length; i++) {
-      const exchangeData: CryptoDataServer[] = await fetchExchangeData(
-        exchanges[i],
-        cryptoPairs
-      )
-      _data = [..._data, ...exchangeData]
-    }
+  // Wait for all promises to settle
+  const exchangeDataArrays: CryptoDataServer[][] = await Promise.all(fetchCryptoDataPromises);
 
-    return _data
-  }
+  // Flatten the array of arrays into a single array of CryptoDataServer
+  const cryptoData: CryptoDataServer[] = exchangeDataArrays.flat();
 
-  // Call the async function to fetch the data
-  const cryptoData: CryptoDataServer[] = await fetchCryptoData()
-
-  return cryptoData
+  return cryptoData;
 }
+

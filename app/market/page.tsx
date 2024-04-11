@@ -196,21 +196,22 @@ export default function Page() {
       {}
     )
   }
-
+  const cryptoPairs = [
+    'BTC/USDT',
+    'ETH/USDT',
+    'XRP/USDT',
+    'BCH/USDT',
+    'LTC/USDT',
+    'EOS/USDT',
+    'XTZ/USDT',
+    'LINK/USDT',
+    'SOL/USDT',
+    'ADA/USDT',
+  ]
+  const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'valr']
+  
   React.useEffect(() => {
-    const cryptoPairs = [
-      'BTC/USDT',
-      'ETH/USDT',
-      'XRP/USDT',
-      'BCH/USDT',
-      'LTC/USDT',
-      'EOS/USDT',
-      'XTZ/USDT',
-      'LINK/USDT',
-      'SOL/USDT',
-      'ADA/USDT',
-    ]
-    const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'valr']
+   
 
     const fetchData = async () => {
       try {
