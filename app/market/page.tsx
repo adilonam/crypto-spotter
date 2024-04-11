@@ -144,8 +144,8 @@ const columns: ColumnDef<CryptoDataClient>[] = [
         className={`lowercase text-xl ${(row.getValue('priceChange') as number) > 0 ? 'text-red-500' : 'text-green-500'}`}
       >
         {Math.round(
-          ((row.getValue('priceChange') as number) + Number.EPSILON) * 100
-        ) / 100}
+          ((row.getValue('priceChange') as number) * 100 + Number.EPSILON) * 1000
+        ) / 1000}
       </div>
     ),
   },
@@ -239,8 +239,7 @@ export default function Page() {
         _data = _data.map((item: CryptoDataClient) => {
           const priceChange: number =
             ((item.price - lowestPrices[item.symbol]) /
-              lowestPrices[item.symbol]) *
-            100
+              lowestPrices[item.symbol]) 
 
           return {
             ...item,
