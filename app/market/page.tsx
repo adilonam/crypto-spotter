@@ -36,7 +36,7 @@ import {
 import { Loader2 } from 'lucide-react'
 
 import axios from 'axios'
-import { CryptoDataClient } from '@/utils/utilsClient'
+import { CryptoDataClient, roundNumber } from '@/utils/utilsClient'
 
 const columns: ColumnDef<CryptoDataClient>[] = [
   {
@@ -120,9 +120,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
     },
     cell: ({ row }) => (
       <div className='lowercase'>
-        {Math.round(
-          ((row.getValue('quoteVolume') as number) + Number.EPSILON) * 100
-        ) / 100}
+        {row.getValue('quoteVolume') == 0 ?  'unknown' : roundNumber(row.getValue('quoteVolume') , 2) }
       </div>
     ),
   },
@@ -208,7 +206,7 @@ export default function Page() {
     'SOL/USDT',
     'ADA/USDT',
   ]
-  const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'valr']
+  const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'valr', 'bitoasis']
   
   React.useEffect(() => {
    

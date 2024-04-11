@@ -322,6 +322,74 @@ const ccxtCryptoData: (exchangeId: string, pairs: string[]) => Promise<CryptoDat
 
 }
 
+
+
+// Assuming CryptoDataServer is an already defined interface
+function convertBitoasisToCctxTicker(data: any): CryptoDataServer {
+  const {
+    pair,
+    bid,
+    ask,
+    open_price,
+    last_price,
+    daily_low,
+    daily_high,
+    daily_change,
+    daily_percentage_change
+  } = data.ticker;
+
+  const cryptoData: CryptoDataServer = {
+    symbol: pair.replace('-', '/'),
+    info: data,
+    timestamp: new Date().getTime(), // Assuming current timestamp since 'created' is not provided
+    datetime: new Date().toISOString(), // Assuming current datetime in ISO format
+    high: parseFloat(daily_high),
+    low: parseFloat(daily_low),
+    bid: parseFloat(bid),
+    bidVolume: 0, // Placeholder, as we don't have actual bidVolume data
+    ask: parseFloat(ask),
+    askVolume: 0, // Placeholder, as we don't have actual askVolume data
+    vwap: 0,      // Placeholder, as we don't have actual vwap data
+    open: parseFloat(open_price),
+    close: parseFloat(last_price),
+    last: parseFloat(last_price),
+    previousClose: parseFloat(open_price), // Assuming open as previous close
+    change: parseFloat(daily_change),
+    percentage: parseFloat(daily_percentage_change),
+    average: (parseFloat(last_price) + parseFloat(open_price)) / 2,
+    quoteVolume: 0, // Placeholder, as we don't have quoteVolume data
+    baseVolume: 0,  // Placeholder, as we don't have baseVolume data
+    exchangeId: "bitoasis" // Placeholder, as exchange ID is not provided
+  };
+
+  return cryptoData;
+}
+
+const bitoasisCryptoData: ( pairs: string[]) => Promise<CryptoDataServer[]> = async ( pairs: string[]) => {
+  const getRequestUrl = (p: string) => `https://api.bitoasis.net/v1/exchange/ticker/${p.replace('/', '-')}`;
+
+  // Create an array of promises
+  const promises = pairs.map(pair => 
+    axios.get(getRequestUrl(pair)).then(response => convertBitoasisToCctxTicker(response.data)).catch(error => {
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error:', error.message);
+      } else {
+        console.error('Unexpected error:', error);
+      }
+      return null; // Skip this pair in case of error
+    })
+  );
+
+  // Wait for all the promises to settle
+  const results = await Promise.all(promises);
+
+  // Filter out `null` results due to errors
+  const cryptoDatas = results.filter(result => result !== null);
+
+  return cryptoDatas as CryptoDataServer[];
+
+}
+
 const valrCryptoData: (pairs: string[]) => Promise<CryptoDataServer[]> = async (pairs: string[]) => {
   const getRequestUrl = (p: string) => `https://api.valr.com/v1/public/${p.replace('/', '')}/marketsummary`;
 
@@ -360,6 +428,9 @@ const fetchExchangeData: (
     case 'valr':
       cryptoDatas = await valrCryptoData(pairs);
       break
+      case 'bitoasis':
+        cryptoDatas = await bitoasisCryptoData(pairs);
+        break
     default:
       cryptoDatas = await ccxtCryptoData(exchangeId, pairs)
       break
