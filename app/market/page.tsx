@@ -38,6 +38,8 @@ import { Loader2 } from 'lucide-react'
 import axios from 'axios'
 import { CryptoDataClient, roundNumber } from '@/utils/utilsClient'
 
+const changeMult : number = 100000
+
 const columns: ColumnDef<CryptoDataClient>[] = [
   {
     id: 'select',
@@ -132,7 +134,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
           variant='ghost'
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          Change
+          Difference * {changeMult}
           <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       )
@@ -141,9 +143,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
       <div
         className={`lowercase text-xl ${(row.getValue('priceChange') as number) > 0 ? 'text-red-500' : 'text-green-500'}`}
       >
-        {Math.round(
-          ((row.getValue('priceChange') as number) * 100 + Number.EPSILON) * 1000
-        ) / 1000}
+        {roundNumber( (row.getValue('priceChange') as number) * changeMult , 3 ) }
       </div>
     ),
   },
