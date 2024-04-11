@@ -101,10 +101,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
     },
     cell: ({ row }) => (
       <div className='lowercase'>
-        {' '}
-        {Math.round(
-          ((row.getValue('price') as number) + Number.EPSILON) * 100
-        ) / 100}
+        {row.getValue('price')}
       </div>
     ),
   },
@@ -225,7 +222,7 @@ export default function Page() {
         })
         // calculate price
         let _data = response.data.map((item: CryptoDataClient) => {
-          const price: number = ((item.ask ?? 0) + (item.bid ?? 0)) / 2
+          const price: number = (item.ask ?? 0)
 
           return {
             ...item,
