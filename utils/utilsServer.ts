@@ -4,7 +4,7 @@ import { PrismaClient, User } from '@prisma/client'
 import nodemailer from 'nodemailer'
 import { randomUUID } from 'crypto'
 import ccxt, { Exchange, Ticker } from 'ccxt'
-import axios from 'axios';
+import axios from 'axios'
 
 export async function getById(
   objId: string,
@@ -239,8 +239,6 @@ export interface CryptoDataServer extends Ticker {
   exchangeId?: string
 }
 
-
-
 function convertValrToCctxTicker(data: any): CryptoDataServer {
   const {
     currencyPair,
@@ -253,8 +251,8 @@ function convertValrToCctxTicker(data: any): CryptoDataServer {
     highPrice,
     lowPrice,
     created,
-    changeFromPrevious
-  } = data;
+    changeFromPrevious,
+  } = data
 
   const cryptoData: CryptoDataServer = {
     symbol: `${currencyPair.substr(0, 3)}/${currencyPair.substr(3)}`,
@@ -267,7 +265,7 @@ function convertValrToCctxTicker(data: any): CryptoDataServer {
     bidVolume: 0, // Placeholder, as we don't have actual bidVolume data
     ask: parseFloat(askPrice),
     askVolume: 0, // Placeholder, as we don't have actual askVolume data
-    vwap: 0,      // Placeholder, as we don't have actual vwap data
+    vwap: 0, // Placeholder, as we don't have actual vwap data
     open: parseFloat(previousClosePrice),
     close: parseFloat(lastTradedPrice),
     last: parseFloat(lastTradedPrice),
@@ -277,13 +275,19 @@ function convertValrToCctxTicker(data: any): CryptoDataServer {
     average: (parseFloat(lastTradedPrice) + parseFloat(previousClosePrice)) / 2,
     quoteVolume: parseFloat(quoteVolume),
     baseVolume: parseFloat(baseVolume),
-    exchangeId: "valr"
-  };
+    exchangeId: 'valr',
+  }
 
-  return cryptoData;
+  return cryptoData
 }
 // Type for the function to fetch data from exchanges
-const ccxtCryptoData: (exchangeId: string, pairs: string[]) => Promise<CryptoDataServer[]> = async (exchangeId: string, pairs: string[]) => {
+const ccxtCryptoData: (
+  exchangeId: string,
+  pairs: string[]
+) => Promise<CryptoDataServer[]> = async (
+  exchangeId: string,
+  pairs: string[]
+) => {
   try {
     const exchangeClass: any = ccxt[exchangeId as keyof typeof ccxt]
 
@@ -291,38 +295,35 @@ const ccxtCryptoData: (exchangeId: string, pairs: string[]) => Promise<CryptoDat
       let exchangeInstance: Exchange = new exchangeClass()
 
       // Create an array of promises using map
-      const tickerPromises = pairs.map(pair =>
-        exchangeInstance.fetchTicker(pair).catch(error => {
-          console.error(`Error fetching ticker for pair ${pair} on ${exchangeId}:`, error);
-          return null;
+      const tickerPromises = pairs.map((pair) =>
+        exchangeInstance.fetchTicker(pair).catch((error) => {
+          console.error(
+            `Error fetching ticker for pair ${pair} on ${exchangeId}:`,
+            error
+          )
+          return null
         })
-      );
+      )
 
       // Await all promises
-      const tickerResults = await Promise.all(tickerPromises);
+      const tickerResults = await Promise.all(tickerPromises)
 
       // Filter out null values (errors) and map over remaining tickers to add exchangeId
-      const tickersWithExchangeId = tickerResults.filter(ticker => ticker !== null).map(ticker => ({
-        ...ticker,
-        exchangeId: exchangeId,
-      }));
+      const tickersWithExchangeId = tickerResults
+        .filter((ticker) => ticker !== null)
+        .map((ticker) => ({
+          ...ticker,
+          exchangeId: exchangeId,
+        }))
 
-
-      return tickersWithExchangeId as CryptoDataServer[];
-
-
-
+      return tickersWithExchangeId as CryptoDataServer[]
     }
     return []
   } catch (error) {
     console.error(`Error fetching tickers from ${exchangeId}:`, error)
     return []
   }
-
-
 }
-
-
 
 // Assuming CryptoDataServer is an already defined interface
 function convertBitoasisToCctxTicker(data: any): CryptoDataServer {
@@ -335,8 +336,8 @@ function convertBitoasisToCctxTicker(data: any): CryptoDataServer {
     daily_low,
     daily_high,
     daily_change,
-    daily_percentage_change
-  } = data.ticker;
+    daily_percentage_change,
+  } = data.ticker
 
   const cryptoData: CryptoDataServer = {
     symbol: pair.replace('-', '/'),
@@ -349,7 +350,7 @@ function convertBitoasisToCctxTicker(data: any): CryptoDataServer {
     bidVolume: 0, // Placeholder, as we don't have actual bidVolume data
     ask: parseFloat(ask),
     askVolume: 0, // Placeholder, as we don't have actual askVolume data
-    vwap: 0,      // Placeholder, as we don't have actual vwap data
+    vwap: 0, // Placeholder, as we don't have actual vwap data
     open: parseFloat(open_price),
     close: parseFloat(last_price),
     last: parseFloat(last_price),
@@ -358,115 +359,139 @@ function convertBitoasisToCctxTicker(data: any): CryptoDataServer {
     percentage: parseFloat(daily_percentage_change),
     average: (parseFloat(last_price) + parseFloat(open_price)) / 2,
     quoteVolume: 0, // Placeholder, as we don't have quoteVolume data
-    baseVolume: 0,  // Placeholder, as we don't have baseVolume data
-    exchangeId: "bitoasis" // Placeholder, as exchange ID is not provided
-  };
+    baseVolume: 0, // Placeholder, as we don't have baseVolume data
+    exchangeId: 'bitoasis', // Placeholder, as exchange ID is not provided
+  }
 
-  return cryptoData;
+  return cryptoData
 }
 
-const bitoasisCryptoData: ( pairs: string[]) => Promise<CryptoDataServer[]> = async ( pairs: string[]) => {
-  const getRequestUrl = (p: string) => `https://api.bitoasis.net/v1/exchange/ticker/${p.replace('/', '-')}`;
+function convertCryptoComToCcxtTicker(data: any): CryptoDataServer {
+  // Assuming `data` is the response object received with the structure you provided.
+  const tickerData = data.result.data[0] // assuming we're taking the first ticker data
+
+  const cryptoData: CryptoDataServer = {
+    symbol: tickerData.i.replace('-PERP', '').replace('USD', '/USDT'), // Replace depending on actual pair format
+    info: tickerData,
+    timestamp: tickerData.t,
+    datetime: new Date(tickerData.t).toISOString(),
+    high: parseFloat(tickerData.h),
+    low: parseFloat(tickerData.l),
+    bid: parseFloat(tickerData.b),
+    bidVolume: undefined, // Not provided in data
+    ask: parseFloat(tickerData.k),
+    askVolume: undefined, // Not provided in data
+    vwap: undefined, // Not provided in data (vv might be the total value, but that's not clear)
+    open: undefined, // Not provided in data
+    close: parseFloat(tickerData.a),
+    last: parseFloat(tickerData.a),
+    previousClose: undefined, // Not provided in data, and can't deduce
+    change: undefined, // Not provided directly, 'c' seems like a change percentage
+    percentage: parseFloat(tickerData.c) * 100,
+    average: (parseFloat(tickerData.h) + parseFloat(tickerData.l)) / 2,
+    quoteVolume: parseFloat(tickerData.vv), // Assuming 'vv' to be the quote volume
+    baseVolume: parseFloat(tickerData.v), // Assuming 'v' to be the base volume
+    exchangeId: 'crypto.com', // Replace with the actual exchange ID
+  }
+
+  return cryptoData
+}
+
+const otherCryptoData: (
+  exchangeId: string,
+  pairs: string[]
+) => Promise<CryptoDataServer[]> = async (
+  exchangeId: string,
+  pairs: string[]
+) => {
+  let getRequestUrl: (p: string) => string
+  let convertRespToCctxTicker: (data: any) => CryptoDataServer
+
+  switch (exchangeId) {
+    case 'valr':
+      getRequestUrl = (p: string) =>
+        `https://api.valr.com/v1/public/${p.replace('/', '')}/marketsummary`
+      convertRespToCctxTicker = convertValrToCctxTicker
+      break
+    case 'bitoasis':
+      getRequestUrl = (p: string) =>
+        `https://api.bitoasis.net/v1/exchange/ticker/${p.replace('/', '-')}`
+      convertRespToCctxTicker = convertBitoasisToCctxTicker
+      break
+    case 'crypto.com':
+      getRequestUrl = (p: string) =>
+        `https://api.crypto.com/exchange/v1/public/get-tickers?instrument_name=${p.replace('/USDT', '')}USD-PERP`
+      convertRespToCctxTicker = convertCryptoComToCcxtTicker
+      break
+    default:
+      return []
+  }
 
   // Create an array of promises
-  const promises = pairs.map(pair => 
-    axios.get(getRequestUrl(pair)).then(response => convertBitoasisToCctxTicker(response.data)).catch(error => {
-      if (axios.isAxiosError(error)) {
-        console.error('Axios error:', error.message);
-      } else {
-        console.error('Unexpected error:', error);
-      }
-      return null; // Skip this pair in case of error
-    })
-  );
+  const promises = pairs.map((pair) =>
+    axios
+      .get(getRequestUrl(pair))
+      .then((response) => convertRespToCctxTicker(response.data))
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          console.error('Axios error:', error.message)
+        } else {
+          console.error('Unexpected error:', error)
+        }
+        return null // Skip this pair in case of error
+      })
+  )
 
   // Wait for all the promises to settle
-  const results = await Promise.all(promises);
+  const results = await Promise.all(promises)
 
   // Filter out `null` results due to errors
-  const cryptoDatas = results.filter(result => result !== null);
+  const cryptoDatas = results.filter((result) => result !== null)
 
-  return cryptoDatas as CryptoDataServer[];
-
+  return cryptoDatas as CryptoDataServer[]
 }
-
-const valrCryptoData: (pairs: string[]) => Promise<CryptoDataServer[]> = async (pairs: string[]) => {
-  const getRequestUrl = (p: string) => `https://api.valr.com/v1/public/${p.replace('/', '')}/marketsummary`;
-
-  // Create an array of promises
-  const promises = pairs.map(pair => 
-    axios.get(getRequestUrl(pair)).then(response => convertValrToCctxTicker(response.data)).catch(error => {
-      if (axios.isAxiosError(error)) {
-        console.error('Axios error:', error.message);
-      } else {
-        console.error('Unexpected error:', error);
-      }
-      return null; // Skip this pair in case of error
-    })
-  );
-
-  // Wait for all the promises to settle
-  const results = await Promise.all(promises);
-
-  // Filter out `null` results due to errors
-  const cryptoDatas = results.filter(result => result !== null);
-
-  return cryptoDatas as CryptoDataServer[];
-}
-
-
-
-
 
 const fetchExchangeData: (
   exchangeId: string,
   pairs: string[]
 ) => Promise<CryptoDataServer[]> = async (exchangeId, pairs) => {
+  const ccxtExchanges = ['kraken', 'binance', 'bybit', 'okx']
+  const otherExchanges = ['valr', 'bitoasis', 'crypto.com']
   let cryptoDatas: CryptoDataServer[] = []
   //switch on exchanges
-  switch (exchangeId) {
-    case 'valr':
-      cryptoDatas = await valrCryptoData(pairs);
-      break
-      case 'bitoasis':
-        cryptoDatas = await bitoasisCryptoData(pairs);
-        break
-    default:
-      cryptoDatas = await ccxtCryptoData(exchangeId, pairs)
-      break
+
+  if (ccxtExchanges.includes(exchangeId)) {
+    cryptoDatas = await ccxtCryptoData(exchangeId, pairs)
+    return cryptoDatas
   }
 
+  if (otherExchanges.includes(exchangeId)) {
+    cryptoDatas = await otherCryptoData(exchangeId, pairs)
+    return cryptoDatas
+  }
 
-  return cryptoDatas
-
+  return []
 }
-
-
-
-
-
-
 
 // Hook to fetch the crypto data
 export const getCryptoData = async (
   exchanges: string[],
   cryptoPairs: string[]
 ): Promise<CryptoDataServer[]> => {
-
-  const fetchCryptoDataPromises = exchanges.map(exchange => 
-    fetchExchangeData(exchange, cryptoPairs)
-    .catch(error => {
-      console.error(`Error fetching data for exchange ${exchange}:`, error);
-      return []; // Return an empty array if an error occurs
+  const fetchCryptoDataPromises = exchanges.map((exchange) =>
+    fetchExchangeData(exchange, cryptoPairs).catch((error) => {
+      console.error(`Error fetching data for exchange ${exchange}:`, error)
+      return [] // Return an empty array if an error occurs
     })
-  );
+  )
 
   // Wait for all promises to settle
-  const exchangeDataArrays: CryptoDataServer[][] = await Promise.all(fetchCryptoDataPromises);
+  const exchangeDataArrays: CryptoDataServer[][] = await Promise.all(
+    fetchCryptoDataPromises
+  )
 
   // Flatten the array of arrays into a single array of CryptoDataServer
-  const cryptoData: CryptoDataServer[] = exchangeDataArrays.flat();
+  const cryptoData: CryptoDataServer[] = exchangeDataArrays.flat()
 
-  return cryptoData;
+  return cryptoData
 }
-

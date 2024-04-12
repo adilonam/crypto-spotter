@@ -34,10 +34,7 @@ export interface CryptoDataClient extends Ticker {
   priceChange: number
 }
 
-
 export function roundNumber(value: number, digits: number): number {
-  const factor = Math.pow(10, digits);
-  return Math.round(value * factor) / factor;
+  const factor = Math.pow(10, digits)
+  return Math.round(value * factor) / factor
 }
-
-

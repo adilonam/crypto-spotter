@@ -38,7 +38,7 @@ import { Loader2 } from 'lucide-react'
 import axios from 'axios'
 import { CryptoDataClient, roundNumber } from '@/utils/utilsClient'
 
-const changeMult : number = 100000
+const changeMult: number = 100000
 
 const columns: ColumnDef<CryptoDataClient>[] = [
   {
@@ -101,11 +101,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => (
-      <div className='lowercase'>
-        {row.getValue('price')}
-      </div>
-    ),
+    cell: ({ row }) => <div className='lowercase'>{row.getValue('price')}</div>,
   },
   {
     accessorKey: 'quoteVolume',
@@ -122,7 +118,9 @@ const columns: ColumnDef<CryptoDataClient>[] = [
     },
     cell: ({ row }) => (
       <div className='lowercase'>
-        {row.getValue('quoteVolume') == 0 ?  'unknown' : roundNumber(row.getValue('quoteVolume') , 2) }
+        {row.getValue('quoteVolume') == 0
+          ? 'unknown'
+          : roundNumber(row.getValue('quoteVolume'), 2)}
       </div>
     ),
   },
@@ -143,7 +141,7 @@ const columns: ColumnDef<CryptoDataClient>[] = [
       <div
         className={`lowercase text-xl ${(row.getValue('priceChange') as number) > 0 ? 'text-red-500' : 'text-green-500'}`}
       >
-        {roundNumber( (row.getValue('priceChange') as number) * changeMult , 3 ) }
+        {roundNumber((row.getValue('priceChange') as number) * changeMult, 3)}
       </div>
     ),
   },
@@ -206,11 +204,17 @@ export default function Page() {
     'SOL/USDT',
     'ADA/USDT',
   ]
-  const exchanges = ['kraken', 'binance', 'bybit', 'okx', 'valr', 'bitoasis']
-  
-  React.useEffect(() => {
-   
+  const exchanges = [
+    'kraken',
+    'binance',
+    'bybit',
+    'okx',
+    'valr',
+    'bitoasis',
+    'crypto.com',
+  ]
 
+  React.useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get('/api/v1/crypto-data', {
@@ -221,7 +225,7 @@ export default function Page() {
         })
         // calculate price
         let _data = response.data.map((item: CryptoDataClient) => {
-          const price: number = (item.ask ?? 0)
+          const price: number = item.ask ?? 0
 
           return {
             ...item,
@@ -236,8 +240,7 @@ export default function Page() {
         // insert price changes
         _data = _data.map((item: CryptoDataClient) => {
           const priceChange: number =
-            ((item.price - lowestPrices[item.symbol]) /
-              lowestPrices[item.symbol]) 
+            (item.price - lowestPrices[item.symbol]) / lowestPrices[item.symbol]
 
           return {
             ...item,
@@ -261,11 +264,9 @@ export default function Page() {
         <Input
           placeholder='Filter symbol...'
           value={(table.getColumn('symbol')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>{
+          onChange={(event) => {
             table.getColumn('symbol')?.setFilterValue(event.target.value)
-          }
-        
-          }
+          }}
           className='max-w-sm'
         />
         <DropdownMenu>
