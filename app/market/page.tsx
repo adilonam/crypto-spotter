@@ -214,10 +214,14 @@ export default function Page() {
     'crypto.com',
   ]
 
+  const apiUrl  = '/api/v1/crypto-data';
+  const apiDelay = 10000; 
+
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('/api/v1/crypto-data', {
+        const response = await axios.get(apiUrl, {
           params: {
             pairs: cryptoPairs,
             exchanges: exchanges,
@@ -255,7 +259,8 @@ export default function Page() {
       }
     }
 
-    fetchData()
+    const intervalId = setInterval(fetchData, apiDelay); 
+    return () => clearInterval(intervalId);
   }, [])
 
   return (
