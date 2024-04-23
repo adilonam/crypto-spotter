@@ -203,6 +203,8 @@ export default function Page() {
     'LINK/USDT',
     'SOL/USDT',
     'ADA/USDT',
+    'USDC/USDT',
+    "ENA/USDT"
   ]
   const exchanges = [
     'kraken',
